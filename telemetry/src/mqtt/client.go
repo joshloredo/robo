@@ -3,6 +3,7 @@ package mqtt
 import (
 	"encoding/json"
 	"telemetry/include/logger"
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -74,6 +75,14 @@ func (m *MQTTTelemetryClient) PublishTelemetry(messageType string, data interfac
 	token := m.client.Publish(topic, QoSAtLeastOnce, false, jsonData)
 	token.Wait()
 	return token.Error()
+}
+
+func (m *MQTTTelemetryClient) BrokerURL() string {
+	return m.brokerURL
+}
+
+func (m *MQTTTelemetryClient) IsConnected() bool {
+	return m.client != nil && m.client.IsConnected()
 }
 
 // ... move all the MQTTTelemetryClient methods here ...
