@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"telemetry/include/logger"
 	"telemetry/src/mqtt"
 	"telemetry/src/simulation"
@@ -180,12 +181,15 @@ func (t *TelemetryTestRunner) publishMockTelemetry() {
 
 	ctx := t.pool.Context()
 	done := make(chan struct{})
-	defer close(done)
+	var once sync.Once // Add this to ensure we only close once
 
+	// Goroutine to handle context cancellation
 	go func() {
 		<-ctx.Done()
 		ticker.Stop()
-		close(done)
+		once.Do(func() {
+			close(done)
+		})
 	}()
 
 	for {
