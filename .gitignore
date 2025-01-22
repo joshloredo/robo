@@ -1,0 +1,29 @@
+# Rust specific ignores
+/target/
+**/*.rs.bk
+Cargo.lock
+*.pdb
+
+# Go specific ignores
+/bin/
+/pkg/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+go.work
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Debug files
+*.debug
+debug/
+
+# Dependencies
+/vendor/
