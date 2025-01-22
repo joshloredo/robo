@@ -2,23 +2,22 @@ package simulation
 
 import (
 	"context"
-	"fmt"
 	"math/rand"
 	"sync"
-	"time"
 	"telemetry/include/logger"
+	"time"
 )
 
 // MockRobot represents a simulated robot
 type MockRobot struct {
-	ID            string
-	status        RobotStatus
-	position      Position
-	batteryLevel  float64
-	log           *logger.Logger
-	msgChan       chan interface{}
-	stopChan      chan struct{}
-	wg            sync.WaitGroup
+	ID           string
+	status       RobotStatus
+	position     Position
+	batteryLevel float64
+	log          *logger.Logger
+	msgChan      chan interface{}
+	stopChan     chan struct{}
+	wg           sync.WaitGroup
 }
 
 // NewMockRobot creates a new simulated robot
@@ -40,10 +39,10 @@ func (r *MockRobot) Start(ctx context.Context) {
 
 	// Heartbeat routine
 	go r.heartbeatRoutine(ctx)
-	
+
 	// Health monitoring routine
 	go r.healthRoutine(ctx)
-	
+
 	// Navigation routine
 	go r.navigationRoutine(ctx)
 
@@ -107,7 +106,7 @@ func (r *MockRobot) navigationRoutine(ctx context.Context) {
 			// Simulate movement
 			r.position.X += (rand.Float64() - 0.5) * 0.5
 			r.position.Y += (rand.Float64() - 0.5) * 0.5
-			
+
 			msg := NavigationMessage{
 				RobotID:    r.ID,
 				Timestamp:  time.Now(),
@@ -116,7 +115,7 @@ func (r *MockRobot) navigationRoutine(ctx context.Context) {
 				Velocity:   rand.Float64() * 2.0,
 				PathStatus: "CLEAR",
 			}
-			
+
 			// Randomly generate obstacles
 			if rand.Float64() < 0.1 { // 10% chance of obstacle
 				msg.Obstacles = []Obstacle{{
@@ -130,7 +129,7 @@ func (r *MockRobot) navigationRoutine(ctx context.Context) {
 					Severity: "MEDIUM",
 				}}
 			}
-			
+
 			r.msgChan <- msg
 		}
 	}
@@ -147,4 +146,4 @@ func (r *MockRobot) Stop() {
 	r.wg.Wait()
 	close(r.msgChan)
 	r.log.Info("Robot %s stopped", r.ID)
-} 
+}
