@@ -35,7 +35,7 @@ func (t *TelemetryTestRunner) Run() error {
 	time.Sleep(time.Second)
 
 	// Subscribe to commands
-	err := t.robotClient.SubscribeToCommands(func(msg paho.Message) {
+	err := t.robotClient.SubscribeToCommands(func(client paho.Client, msg paho.Message) {
 		t.log.Info("Received command: %s on topic: %s",
 			string(msg.Payload()), msg.Topic())
 	})
