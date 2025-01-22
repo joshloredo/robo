@@ -61,16 +61,16 @@ impl Motor for N20Motor {
     fn set_direction(&mut self, direction: MotorDirection) -> Result<(), HardwareError> {
         match direction {
             MotorDirection::Forward => {
-                self.dir_pin1.set_high();
-                self.dir_pin2.set_low();
+                self.dir_pin1.set_high().map_err(|e| HardwareError::PinError(e))?;
+                self.dir_pin2.set_low().map_err(|e| HardwareError::PinError(e))?;
             }
             MotorDirection::Backward => {
-                self.dir_pin1.set_low();
-                self.dir_pin2.set_high();
+                self.dir_pin1.set_low().map_err(|e| HardwareError::PinError(e))?;
+                self.dir_pin2.set_high().map_err(|e| HardwareError::PinError(e))?;
             }
             MotorDirection::Stop => {
-                self.dir_pin1.set_low();
-                self.dir_pin2.set_low();
+                self.dir_pin1.set_low().map_err(|e| HardwareError::PinError(e))?;
+                self.dir_pin2.set_low().map_err(|e| HardwareError::PinError(e))?;
             }
         }
         

@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"time"
+
+	"telemetry/include/logger"
 )
 
 // SensorData represents the basic structure for all sensor readings
@@ -60,6 +62,7 @@ type TelemetryManager struct {
 	sensors  []Sensor
 	storage  Storage
 	interval time.Duration
+	log      *logger.Logger
 }
 
 // NewTelemetryManager creates a new telemetry manager instance
@@ -68,6 +71,7 @@ func NewTelemetryManager(storage Storage, interval time.Duration) *TelemetryMana
 		sensors:  make([]Sensor, 0),
 		storage:  storage,
 		interval: interval,
+		log:      logger.New(logger.INFO),
 	}
 }
 
@@ -85,21 +89,25 @@ func (tm *TelemetryManager) Start(ctx context.Context) error {
 	ticker := time.NewTicker(tm.interval)
 	defer ticker.Stop()
 
+	tm.log.Info("Starting telemetry collection")
+
 	for {
 		select {
 		case <-ctx.Done():
+			tm.log.Warn("Telemetry collection stopped: %v", ctx.Err())
 			return ctx.Err()
 		case <-ticker.C:
 			for _, sensor := range tm.sensors {
 				data, err := sensor.Read(ctx)
 				if err != nil {
-					// Log error but continue with other sensors
+					tm.log.Error("Error reading sensor %s: %v", sensor.ID(), err)
 					continue
 				}
 				if err := tm.storage.Store(data); err != nil {
-					// Log storage error
+					tm.log.Error("Error storing data from sensor %s: %v", sensor.ID(), err)
 					continue
 				}
+				tm.log.Debug("Collected data from sensor %s", sensor.ID())
 			}
 		}
 	}
@@ -140,18 +148,20 @@ func (s *IMUSensor) Shutdown() error {
 
 // Store implements Storage interface for SDCardStorage
 func (s *SDCardStorage) Store(data SensorData) error {
-	// Implementation for writing to SD card
-	// Consider using buffered writes and periodic syncs for performance
+	log := logger.New(logger.INFO)
 	jsonData, err := json.Marshal(data)
 	if err != nil {
+		log.Error("Failed to marshal sensor data: %v", err)
 		return err
 	}
 	// Implement actual file writing logic
-
+	log.Debug("Stored data for sensor %s", data.SensorID)
 	return nil
 }
 
 func (s *SDCardStorage) Retrieve(sensorID string, startTime, endTime time.Time) ([]SensorData, error) {
+	log := logger.New(logger.INFO)
+	log.Debug("Retrieving data for sensor %s between %v and %v", sensorID, startTime, endTime)
 	// Implementation for reading from SD card
 	return nil, nil
 }
