@@ -1,60 +1,59 @@
 package main
 
 import (
-	"bufio"
+	"context"
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
+	"os/signal"
 	"telemetry/include/logger"
-	"time"
+	"telemetry/src/simulation"
 )
 
-func printMenu() {
-	fmt.Println("\n=== Test Menu ===")
-	fmt.Println("1. Print Hello World")
-	fmt.Println("2. Test Logger Levels")
-	fmt.Println("3. Print Current Time")
-	fmt.Println("0. Exit")
-	fmt.Print("Enter your choice: ")
-}
-
-func testLoggerLevels(log *logger.Logger) {
-	log.Debug("This is a debug message")
-	log.Info("This is an info message")
-	log.Warn("This is a warning message")
-	log.Error("This is an error message")
-}
-
 func main() {
-	// Initialize logger with DEBUG level
 	log := logger.New(logger.DEBUG)
-	scanner := bufio.NewScanner(os.Stdin)
+	fleet := simulation.NewFleetManager()
 
-	for {
-		printMenu()
+	// Add some mock robots
+	initialPositions := []simulation.Position{
+		{X: 0, Y: 0, Z: 0},
+		{X: 10, Y: 10, Z: 0},
+		{X: -10, Y: -10, Z: 0},
+	}
 
-		// Read user input
-		scanner.Scan()
-		choice, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
-		if err != nil {
-			log.Error("Invalid input: %v", err)
-			continue
-		}
-
-		// Process user choice
-		switch choice {
-		case 0:
-			log.Info("Exiting program...")
+	for i, pos := range initialPositions {
+		robotID := fmt.Sprintf("ROBOT_%03d", i+1)
+		if err := fleet.AddRobot(robotID, pos); err != nil {
+			log.Error("Failed to add robot: %v", err)
 			return
-		case 1:
-			log.Info("Hello, World!")
-		case 2:
-			testLoggerLevels(log)
-		case 3:
-			log.Info("Current time: %v", time.Now().Format("2006-01-02 15:04:05"))
-		default:
-			log.Warn("Invalid option: %d", choice)
 		}
 	}
+
+	// Create context with cancellation
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start all robots
+	fleet.StartAll(ctx)
+
+	// Handle message processing
+	channels := fleet.GetRobotChannels()
+	go func() {
+		for id, ch := range channels {
+			go func(robotID string, msgChan <-chan interface{}) {
+				for msg := range msgChan {
+					// Process messages as needed
+					log.Debug("Received message from %s: %+v", robotID, msg)
+				}
+			}(id, ch)
+		}
+	}()
+
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
+	<-sigChan
+
+	log.Info("Shutting down simulation...")
+	cancel()
+	fleet.StopAll()
 }
