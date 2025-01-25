@@ -1,6 +1,7 @@
 //! Motor control implementations
 use rppal::gpio::{Gpio, OutputPin};
 use crate::error::HardwareError;
+use log::info;
 
 #[derive(Debug, Clone, Copy)]
 pub enum MotorDirection {
@@ -13,6 +14,7 @@ pub trait Motor {
     fn set_speed(&mut self, speed: f32) -> Result<(), HardwareError>;
     fn set_direction(&mut self, direction: MotorDirection) -> Result<(), HardwareError>;
     fn stop(&mut self) -> Result<(), HardwareError>;
+    fn say_hello(&mut self) -> Result<(), HardwareError>;
 }
 
 pub struct N20Motor {
@@ -81,6 +83,11 @@ impl Motor for N20Motor {
     fn stop(&mut self) -> Result<(), HardwareError> {
         self.set_direction(MotorDirection::Stop)?;
         self.set_speed(0.0)?;
+        Ok(())
+    }
+
+    fn say_hello(&mut self) -> Result<(), HardwareError> {
+        info!("Hello from N20Motor!");
         Ok(())
     }
 }

@@ -28,7 +28,8 @@ func (fm *FleetManager) AddRobot(id string, initialPosition Position) error {
 	defer fm.mu.Unlock()
 
 	if _, exists := fm.robots[id]; exists {
-		return fmt.Errorf("robot with ID %s already exists", id)
+		fm.log.Warn("Attempted to add duplicate robot with ID: %s", id)
+		return ErrDuplicateRobot
 	}
 
 	fm.robots[id] = NewMockRobot(id, initialPosition)

@@ -7,4 +7,4 @@ mod sensor;
 
 pub use error::HardwareError;
 pub use motor::{Motor, MotorDirection, N20Motor};
-pub use sensor::Sensor;
+pub use sensor::{Sensor, DummySensor};
