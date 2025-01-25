@@ -3,8 +3,13 @@ name = "robot_hal"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = ["simulation"]  # Default to simulation mode
+simulation = []  # Simulation feature flag
+hardware = ["dep:rppal"]  # Hardware feature flag for Raspberry Pi
+
 [dependencies]
-rppal = "0.14"
+rppal = { version = "0.14", optional = true }  # Make rppal optional
 embedded-hal = "0.2"
 log = "0.4"
 anyhow = "1.0"
