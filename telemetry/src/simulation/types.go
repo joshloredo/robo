@@ -16,9 +16,13 @@ const (
 
 // HeartbeatMessage represents the periodic connectivity check
 type HeartbeatMessage struct {
+	// RobotID uniquely identifies the robot sending the heartbeat
 	RobotID    string      `json:"robot_id"`
+	// Timestamp indicates when the heartbeat was generated
 	Timestamp  time.Time   `json:"timestamp"`
+	// Status represents the current operational state of the robot
 	Status     RobotStatus `json:"status"`
+	// BatteryPct indicates the remaining battery charge (0-100)
 	BatteryPct float64     `json:"battery_percentage"`
 }
 
